@@ -162,15 +162,22 @@ public class ChatColorPlugin extends JavaPlugin {
 
         try{
 
-            String urlConnection = ("jdbc:mysql://{host}:{port}/{database}?user={username}&password={password}"+additionalUrl)
+            // URL básica sem credenciais para evitar problemas de encoding
+            String urlConnection = ("jdbc:mysql://{host}:{port}/{database}")
                     .replaceAll("\\{host}", host)
                     .replaceAll("\\{port}", port)
-                    .replaceAll("\\{username}", username)
-                    .replaceAll("\\{password}", password)
                     .replaceAll("\\{database}", database);
+            
+            // Adicionar parâmetros adicionais apenas se não começar com ?
+            if (additionalUrl != null && !additionalUrl.isEmpty()) {
+                urlConnection += (additionalUrl.startsWith("?") ? "" : "?") + additionalUrl.replace("&", "&");
+            }
 
             HikariConfig hikariConfig = new HikariConfig();
             hikariConfig.setJdbcUrl(urlConnection);
+            // Configurar credenciais separadamente (método correto)
+            hikariConfig.setUsername(username);
+            hikariConfig.setPassword(password);
 
             this.hikariConnectionPool = new HikariDataSource(hikariConfig);
 
